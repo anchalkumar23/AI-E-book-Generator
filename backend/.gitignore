@@ -23,3 +23,5 @@ static/images/
 
 # Secrets
 .env
+
+ebooks.db
