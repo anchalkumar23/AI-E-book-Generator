@@ -1,6 +1,7 @@
+import os
 from sqlmodel import SQLModel, create_engine, Session, text
 
-DATABASE_URL = "sqlite:///./ebooks.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ebooks.db")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 # New columns added after initial schema — safely ignored if they already exist
