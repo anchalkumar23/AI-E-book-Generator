@@ -1,0 +1,261 @@
+/*
+  Book card: portrait 2:3, perspective tilt on hover, spine shadow on left edge.
+  Hover reveals action overlay with blur. Generating cards show live shimmer + bar.
+*/
+
+.wrap {
+  aspect-ratio: 2 / 3;
+  perspective: 900px;
+  cursor: pointer;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px 10px 10px 6px;
+  overflow: hidden;
+  position: relative;
+  transform-origin: left center;
+  transform: rotateY(0deg) translateZ(0);
+  transition:
+    transform  280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out);
+  box-shadow:
+    -4px 0  8px rgba(0,0,0,0.5),
+     4px 4px 24px rgba(0,0,0,0.4);
+  will-change: transform;
+}
+
+/* Hovering: slight rotation toward viewer, lift */
+.wrap:hover .card {
+  transform: rotateY(-8deg) translateX(4px) translateZ(12px);
+  box-shadow:
+    -6px 0  16px rgba(0,0,0,0.6),
+    12px 12px 40px rgba(0,0,0,0.55);
+}
+
+.wrap:active .card {
+  transform: rotateY(-4deg) translateX(2px) scale(0.98);
+}
+
+/* Left spine — gives 3D book binding illusion */
+.spine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0));
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* Book cover gradient fill */
+.cover {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Vignette: text area at bottom */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.82) 0%,
+    rgba(0,0,0,0.25) 40%,
+    transparent 65%
+  );
+  z-index: 1;
+}
+
+/* Cover content */
+.meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 10px;
+  z-index: 3;
+}
+
+.genre {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 5px;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Status badge — top right */
+.badge {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 5;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 7px;
+  border-radius: 100px;
+  line-height: 1;
+}
+
+.badgeDone {
+  background: oklch(0.20 0.05 152);
+  color: oklch(0.76 0.18 152);
+  border: 1px solid oklch(0.40 0.12 152 / 0.6);
+}
+
+.badgeGenerating {
+  background: oklch(0.20 0.05 264);
+  color: oklch(0.80 0.12 264);
+  border: 1px solid oklch(0.40 0.14 264 / 0.6);
+}
+
+.badgeError {
+  background: oklch(0.20 0.05 20);
+  color: oklch(0.78 0.14 20);
+  border: 1px solid oklch(0.40 0.14 20 / 0.6);
+}
+
+/* Favorite star — top left */
+.favBtn {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  z-index: 5;
+  background: none;
+  border: none;
+  padding: 3px;
+  line-height: 0;
+  color: rgba(255,255,255,0.3);
+  transition: color 160ms ease, opacity 160ms ease;
+  opacity: 0;
+}
+
+.wrap:hover .favBtn { opacity: 1; }
+.favBtn.favActive  { opacity: 1; color: #fbbf24; }
+.favBtn:hover      { color: #fbbf24 !important; }
+.favBtn:active     { transform: scale(0.88); }
+
+/* Hover action overlay */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: inherit;
+  background: rgba(0,0,0,0.58);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.wrap:hover .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.overlayBtn {
+  width: 78%;
+  padding: 8px 0;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 150ms ease, transform 150ms var(--ease-out);
+}
+
+.overlayBtn:hover  { opacity: 0.85; }
+.overlayBtn:active { transform: scale(0.96); }
+
+.overlayPrimary { background: var(--indigo); color: #fff; }
+.overlayGhost {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.75);
+}
+
+/* ── Generating state ── */
+.shimmerWrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.shimmerBar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    oklch(0.62 0.21 264 / 0.14) 50%,
+    transparent 60%
+  );
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.genInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 10px;
+  z-index: 5;
+}
+
+.genTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genPage {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.genTrack {
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.genFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--indigo), var(--violet));
+  border-radius: 1px;
+  animation: progress-pulse 2.2s ease-in-out infinite alternate;
+}

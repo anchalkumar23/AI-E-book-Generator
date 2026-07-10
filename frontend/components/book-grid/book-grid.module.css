@@ -1,0 +1,110 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 18px;
+  padding: 20px;
+}
+
+/* Stagger entrance animation handled via CSS custom property */
+.grid > * {
+  animation: fadeUp 320ms var(--ease-out) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Stagger delay for first N cards */
+.grid > *:nth-child(1)  { animation-delay: 0ms; }
+.grid > *:nth-child(2)  { animation-delay: 40ms; }
+.grid > *:nth-child(3)  { animation-delay: 80ms; }
+.grid > *:nth-child(4)  { animation-delay: 120ms; }
+.grid > *:nth-child(5)  { animation-delay: 160ms; }
+.grid > *:nth-child(6)  { animation-delay: 200ms; }
+.grid > *:nth-child(7)  { animation-delay: 240ms; }
+.grid > *:nth-child(8)  { animation-delay: 280ms; }
+.grid > *:nth-child(n+9){ animation-delay: 320ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grid > * { animation: none; }
+}
+
+/* ── Empty state ── */
+.empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 24px;
+  gap: 12px;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.emptyBody {
+  font-size: 13px;
+  color: var(--faint);
+  max-width: 260px;
+  line-height: 1.55;
+}
+
+.emptyBtn {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--indigo);
+  border: none;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 150ms ease, transform 150ms var(--ease-out);
+}
+
+.emptyBtn:hover  { opacity: 0.9; }
+.emptyBtn:active { transform: scale(0.97); }
+
+/* ── Skeleton loading ── */
+.skeleton {
+  aspect-ratio: 2 / 3;
+  border-radius: 6px 10px 10px 6px;
+  background: var(--raised);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    oklch(1 0 0 / 0.04) 50%,
+    transparent 60%
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+}
