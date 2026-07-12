@@ -9,8 +9,9 @@ class BookCreate(SQLModel):
     book_type: BookType   = BookType.tutorial
     page_count: int       = 15
     illustration_style: str = "Digital flat"
-    cover_hue: int        = 264
-    use_research: bool    = True
+    cover_hue: int             = 264
+    use_research: bool         = True
+    writing_style: Optional[str] = None
 
 
 class BookUpdate(SQLModel):

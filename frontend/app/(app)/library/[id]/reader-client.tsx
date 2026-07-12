@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, ArrowRight, CaretLeft, Image as ImageIcon } from '@phosphor-icons/react'
@@ -23,8 +23,6 @@ interface Source {
 
 function PageImage({ url, alt }: { url: string; alt: string }) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
-
-  // Reset when URL changes (page turn)
   useEffect(() => { setStatus('loading') }, [url])
 
   return (
@@ -51,27 +49,83 @@ function PageImage({ url, alt }: { url: string; alt: string }) {
 
 export function ReaderClient({ id }: { id: number }) {
   const router = useRouter()
-  const [book,      setBook]      = useState<Book | null>(null)
-  const [pages,     setPages]     = useState<Page[]>([])
-  const [sources,   setSources]   = useState<Source[]>([])
-  const [current,   setCurrent]   = useState(0)
-  const [direction, setDirection] = useState(1)
-  const [loading,   setLoading]   = useState(true)
-
-  // total slides = pages + (sources slide if sources exist)
-  const totalSlides = pages.length + (sources.length > 0 ? 1 : 0)
-  const isSourcesSlide = sources.length > 0 && current === totalSlides - 1
+  const [book,       setBook]       = useState<Book | null>(null)
+  const [pages,      setPages]      = useState<Page[]>([])
+  const [sources,    setSources]    = useState<Source[]>([])
+  const [current,    setCurrent]    = useState(0)
+  const [direction,  setDirection]  = useState(1)
+  const [loading,    setLoading]    = useState(true)
+  const [streaming,  setStreaming]  = useState(false)
+  const [genProgress, setGenProgress] = useState(0)
+  const [genLabel,   setGenLabel]   = useState('')
+  const [displayText, setDisplayText] = useState('')
+  const wsRef     = useRef<WebSocket | null>(null)
+  const bufferRef = useRef('')
+  const streamRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     api.books.get(id).then(b => {
       setBook(b)
+      setGenProgress(b.progress)
+      setGenLabel(b.progress_label)
+
       if (b.content) {
         const data = JSON.parse(b.content)
         setPages(data.pages ?? [])
         setSources(data.sources ?? [])
       }
+
+      if (b.status === 'generating') {
+        setStreaming(true)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
+        const wsUrl  = `${apiUrl.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')}/books/${id}/ws`
+        const ws = new WebSocket(wsUrl)
+        wsRef.current = ws
+
+        ws.onmessage = (e) => {
+          const data = JSON.parse(e.data)
+          if (data.type === 'state' || data.type === 'progress') {
+            setGenProgress(data.progress ?? 0)
+            setGenLabel(data.label ?? '')
+          }
+          if (data.type === 'token') {
+            bufferRef.current += data.token
+          }
+          if (data.type === 'page') {
+            setPages(prev => {
+              const exists = prev.some(p => p.page_number === data.page.page_number)
+              return exists ? prev : [...prev, data.page]
+            })
+          }
+          if (data.type === 'done') {
+            if (data.content) {
+              const parsed = JSON.parse(data.content)
+              setPages(parsed.pages ?? [])
+              setSources(parsed.sources ?? [])
+            }
+            setStreaming(false)
+            bufferRef.current = ''
+            setDisplayText('')
+            setGenProgress(100)
+            setGenLabel('Done')
+            ws.close()
+          }
+          if (data.type === 'error') {
+            setStreaming(false)
+            bufferRef.current = ''
+            setDisplayText('')
+            setBook(prev => prev ? { ...prev, status: 'error', error_message: data.message } : prev)
+            ws.close()
+          }
+        }
+      }
     }).finally(() => setLoading(false))
+
+    return () => { wsRef.current?.close() }
   }, [id])
+
+  const totalSlides   = pages.length + (sources.length > 0 ? 1 : 0)
+  const isSourcesSlide = sources.length > 0 && current === totalSlides - 1
 
   const go = useCallback((dir: number) => {
     const next = current + dir
@@ -89,14 +143,29 @@ export function ReaderClient({ id }: { id: number }) {
     return () => window.removeEventListener('keydown', handler)
   }, [go])
 
+  // Reveal buffered tokens at a readable typewriter pace (not a blur)
+  useEffect(() => {
+    if (!streaming) return
+    const id = setInterval(() => {
+      setDisplayText(prev => {
+        const full = bufferRef.current
+        if (prev.length >= full.length) return prev
+        const behind = full.length - prev.length
+        const step = behind > 300 ? 4 : behind > 80 ? 2 : 1
+        return full.slice(0, prev.length + step)
+      })
+    }, 28)
+    return () => clearInterval(id)
+  }, [streaming])
+
+  useEffect(() => {
+    if (streamRef.current) streamRef.current.scrollTop = streamRef.current.scrollHeight
+  }, [displayText])
+
   if (loading) return <div className={s.loading}>Loading…</div>
   if (!book)   return <div className={s.loading}>Book not found.</div>
 
-  if (book.status === 'generating') {
-    return <div className={s.loading}>Still generating — check back in a moment.</div>
-  }
-
-  if (book.status === 'error') {
+  if (book.status === 'error' && !streaming) {
     return (
       <div className={s.loading}>
         <div className={s.errorBox}>{book.error_message ?? 'Generation failed.'}</div>
@@ -104,13 +173,63 @@ export function ReaderClient({ id }: { id: number }) {
     )
   }
 
+  // Generating — live view: illustration on the left, prose typing on the right
+  if (streaming) {
+    const latest = pages.length ? pages[pages.length - 1] : null
+    const paras  = displayText.split('\n').filter(Boolean)
+    return (
+      <div className={s.reader}>
+        <header className={s.topbar}>
+          <button className={s.backBtn} onClick={() => router.push('/library')}>
+            <CaretLeft size={15} weight="bold" /> Library
+          </button>
+          <div className={s.bookTitle}>{book.title}</div>
+          <div className={s.pageCounter}>{genProgress}%</div>
+        </header>
+
+        <div className={s.liveBanner}>
+          <span className={s.livePulse} />
+          <span>{genLabel || 'Generating…'}</span>
+        </div>
+
+        <div className={s.page}>
+          {/* Left — illustration */}
+          <div className={s.illustration}>
+            {latest?.image_url ? (
+              <img key={latest.image_url} src={latest.image_url} alt="" className={`${s.img} ${s.imgFade}`} />
+            ) : (
+              <div className={s.imgGen}>
+                <div className={s.imgSpinner} />
+                <span>{latest ? 'Generating illustration…' : 'Writing the story…'}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Right — streaming text */}
+          <div className={s.textArea} ref={streamRef}>
+            <div className={s.text}>
+              {paras.length === 0 ? (
+                <p><span className={s.cursor} /></p>
+              ) : (
+                paras.map((para, i) => (
+                  <p key={i}>
+                    {para}
+                    {i === paras.length - 1 && <span className={s.cursor} />}
+                  </p>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (pages.length === 0) return <div className={s.loading}>No pages found.</div>
 
   const page = pages[current]
-  const pct  = Math.round(((current + 1) / totalSlides) * 100)
-  const counterLabel = isSourcesSlide
-    ? 'Sources'
-    : `${current + 1} / ${pages.length}`
+  const pct  = Math.round(((current + 1) / Math.max(totalSlides, 1)) * 100)
+  const counterLabel = isSourcesSlide ? 'Sources' : `${current + 1} / ${pages.length}`
 
   return (
     <div className={s.reader}>
@@ -121,6 +240,14 @@ export function ReaderClient({ id }: { id: number }) {
         <div className={s.bookTitle}>{book.title}</div>
         <div className={s.pageCounter}>{counterLabel}</div>
       </header>
+
+      {/* Live generation banner */}
+      {streaming && (
+        <div className={s.liveBanner}>
+          <span className={s.livePulse} />
+          <span>{genLabel || 'Generating…'}</span>
+        </div>
+      )}
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div

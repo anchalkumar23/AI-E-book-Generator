@@ -6,6 +6,13 @@ import { X, Sparkle, Globe } from '@phosphor-icons/react'
 import type { BookCreate } from '@/lib/types'
 import s from './new-book-drawer.module.css'
 
+const WRITING_STYLES = [
+  { value: 'expository',  label: 'Expository'  },
+  { value: 'descriptive', label: 'Descriptive' },
+  { value: 'narrative',   label: 'Narrative'   },
+  { value: 'persuasive',  label: 'Persuasive'  },
+] as const
+
 const BOOK_TYPES = [
   { value: 'childrens',   label: "Children's" },
   { value: 'tutorial',    label: 'Tutorial'    },
@@ -39,6 +46,7 @@ const EMPTY: BookCreate = {
   illustration_style: 'watercolor',
   cover_hue: 264,
   use_research: true,
+  writing_style: '',
 }
 
 export function NewBookDrawer({ open, onClose, onSubmit }: Props) {
@@ -154,6 +162,25 @@ export function NewBookDrawer({ open, onClose, onSubmit }: Props) {
                     onChange={e => set('page_count', Number(e.target.value))}
                   />
                   <span className={s.sliderVal}>{form.page_count} pg</span>
+                </div>
+              </div>
+
+              {/* Writing style */}
+              <div className={s.field}>
+                <label className={s.label}>
+                  Writing style <span className={s.optional}>(optional)</span>
+                </label>
+                <div className={s.pillGroup}>
+                  {WRITING_STYLES.map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`${s.pill} ${form.writing_style === value ? s.pillActive : ''}`}
+                      onClick={() => set('writing_style', form.writing_style === value ? '' : value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

@@ -1,5 +1,8 @@
 .reader {
   height: 100vh;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -300,6 +303,73 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Live generation banner ── */
+.liveBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  background: oklch(0.18 0.04 264);
+  border-bottom: 1px solid oklch(0.28 0.08 264);
+  font-size: 12px;
+  font-weight: 500;
+  color: oklch(0.75 0.12 264);
+  flex-shrink: 0;
+}
+
+.livePulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: oklch(0.65 0.18 264);
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ── Live generation: image-left generating, text-right streaming ── */
+.imgGen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: oklch(0.07 0.01 268);
+  color: var(--faint);
+  font-size: 12.5px;
+  text-align: center;
+  padding: 24px;
+}
+
+.imgFade { animation: imgFade 500ms var(--ease-out); }
+
+@keyframes imgFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Blinking caret at the end of the streaming text */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  background: var(--indigo);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 /* ── States ── */

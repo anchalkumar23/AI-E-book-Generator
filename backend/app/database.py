@@ -10,6 +10,7 @@ _MIGRATIONS = [
     "ALTER TABLE book ADD COLUMN use_research BOOLEAN DEFAULT 1",
     "ALTER TABLE book ADD COLUMN outline TEXT",
     "ALTER TABLE book ADD COLUMN last_modified DATETIME",
+    "ALTER TABLE book ADD COLUMN writing_style TEXT",
 ]
 
 

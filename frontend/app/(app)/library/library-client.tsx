@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Topbar } from '@/components/topbar/topbar'
 import { BookGrid } from '@/components/book-grid/book-grid'
 import { NewBookDrawer } from '@/components/new-book-drawer/new-book-drawer'
+import { HomeScreen } from '@/components/home-screen/home-screen'
 import { api } from '@/lib/api'
 import type { Book, BookCreate, Credits } from '@/lib/types'
 import s from './library.module.css'
@@ -21,6 +22,7 @@ export function LibraryClient() {
   const [search,   setSearch]   = useState('')
   const [view,     setView]     = useState<'grid' | 'list'>('grid')
   const [drawer,   setDrawer]   = useState(false)
+  const wsRefs = useRef<Record<number, WebSocket>>({})
 
   useEffect(() => {
     Promise.all([api.books.list(), api.credits.get()])
@@ -28,14 +30,62 @@ export function LibraryClient() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Poll every 3s while any book is generating
+  // WebSocket connections for generating books — replaces polling
   useEffect(() => {
-    if (!books.some(b => b.status === 'generating')) return
-    const id = setInterval(() => {
-      api.books.list().then(setBooks).catch(() => {})
-    }, 3000)
-    return () => clearInterval(id)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
+    const wsBase = apiUrl.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')
+
+    const generating = books.filter(b => b.status === 'generating')
+
+    generating.forEach(book => {
+      if (wsRefs.current[book.id]) return
+      const ws = new WebSocket(`${wsBase}/books/${book.id}/ws`)
+      wsRefs.current[book.id] = ws
+
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data)
+        if (data.type === 'state' || data.type === 'progress') {
+          setBooks(prev => prev.map(b => b.id === book.id
+            ? { ...b, progress: data.progress ?? b.progress, progress_label: data.label ?? b.progress_label }
+            : b
+          ))
+        }
+        if (data.type === 'done') {
+          setBooks(prev => prev.map(b => b.id === book.id
+            ? { ...b, status: 'done', progress: 100, progress_label: 'Done', content: data.content ?? b.content }
+            : b
+          ))
+          ws.close()
+          delete wsRefs.current[book.id]
+        }
+        if (data.type === 'error') {
+          setBooks(prev => prev.map(b => b.id === book.id
+            ? { ...b, status: 'error', progress_label: 'Generation failed' }
+            : b
+          ))
+          ws.close()
+          delete wsRefs.current[book.id]
+        }
+      }
+
+      ws.onerror = () => { delete wsRefs.current[book.id] }
+      ws.onclose = () => { delete wsRefs.current[book.id] }
+    })
+
+    // Close sockets for books no longer generating
+    const genIds = new Set(generating.map(b => b.id))
+    Object.keys(wsRefs.current).forEach(id => {
+      if (!genIds.has(Number(id))) {
+        wsRefs.current[Number(id)]?.close()
+        delete wsRefs.current[Number(id)]
+      }
+    })
   }, [books])
+
+  // Cleanup on unmount
+  useEffect(() => () => {
+    Object.values(wsRefs.current).forEach(ws => ws?.close())
+  }, [])
 
   const filtered = useMemo(() => {
     let list = [...books]
@@ -84,6 +134,11 @@ export function LibraryClient() {
     navItem === 'favorites'  ? 'Favorites'   :
     navItem === 'generating' ? 'Generating'  :
     navItem.charAt(0).toUpperCase() + navItem.slice(1) + 's'
+
+  // No books yet → ChatGPT-style home screen
+  if (!loading && books.length === 0) {
+    return <HomeScreen onSubmit={handleCreate} />
+  }
 
   return (
     <div className={s.shell}>

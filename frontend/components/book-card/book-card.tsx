@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, BookOpen, Trash } from '@phosphor-icons/react'
+import { Star, BookOpen, Trash, Eye } from '@phosphor-icons/react'
 import type { Book } from '@/lib/types'
 import { api } from '@/lib/api'
 import s from './book-card.module.css'
@@ -106,6 +106,9 @@ export function BookCard({ book, onFavoriteToggle, onRead, onDelete }: Props) {
             <div className={s.genTrack}>
               <div className={s.genFill} style={{ width: `${Math.max(8, book.progress)}%` }} />
             </div>
+            <button className={s.watchBtn} onClick={() => onRead(book.id)}>
+              <Eye size={11} weight="bold" /> Watch Live
+            </button>
           </div>
         )}
 

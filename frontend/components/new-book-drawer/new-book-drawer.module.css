@@ -90,6 +90,7 @@
 }
 
 .required { color: oklch(0.62 0.21 340); margin-left: 2px; }
+.optional  { color: var(--faint); font-weight: 400; font-size: 11px; margin-left: 4px; }
 
 .input,
 .textarea {

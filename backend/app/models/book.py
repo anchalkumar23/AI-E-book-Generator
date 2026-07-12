@@ -34,6 +34,7 @@ class Book(SQLModel, table=True):
     use_research: bool    = True
     created_at: datetime  = Field(default_factory=datetime.utcnow)
     last_modified: Optional[datetime] = None
-    outline: Optional[str]      = None   # JSON book blueprint
-    content: Optional[str]      = None   # JSON pages array
-    error_message: Optional[str] = None
+    writing_style: Optional[str]    = None
+    outline: Optional[str]          = None
+    content: Optional[str]          = None
+    error_message: Optional[str]    = None

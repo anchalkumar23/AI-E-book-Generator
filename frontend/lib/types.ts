@@ -21,6 +21,7 @@ export interface Book {
   progress: number
   progress_label: string
   use_research: boolean
+  writing_style: string | null
   created_at: string
   last_modified: string | null
   outline: string | null
@@ -36,6 +37,7 @@ export interface BookCreate {
   illustration_style: string
   cover_hue: number
   use_research: boolean
+  writing_style?: string
 }
 
 export interface Credits {

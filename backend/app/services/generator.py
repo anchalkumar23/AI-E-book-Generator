@@ -3,17 +3,53 @@ Structured book generation pipeline:
   1. Research (optional, DuckDuckGo multi-source)
   2. Blueprint  — outline, characters, style guide, chapter breakdown
   3. Chapters   — one LLM call per chapter → pages with text + illustration prompts
-  4. Images     — download from Pollinations per page
+  4. Images     — download from Pollinations per page (notifies WS after each)
   5. Finalise
 """
 import json
 from datetime import datetime
+from typing import Callable
 from sqlmodel import Session
 from ..database import engine
 from ..models.book import Book, BookStatus
 from .search import research
-from .llm import generate_json
+from .llm import generate_json, stream_json
 from .images import download_image, REAL_PERSON_MESSAGE
+
+
+class _TextExtractor:
+    """Emit only prose content from 'text' JSON fields during streaming."""
+    _ESC = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
+
+    def __init__(self, notify: Callable[[str], None]):
+        self._notify = notify
+        self._buf = ""
+        self._in_value = False
+        self._esc = False
+
+    def feed(self, raw: str) -> None:
+        for ch in raw:
+            if self._in_value:
+                if self._esc:
+                    self._esc = False
+                    self._notify(self._ESC.get(ch, ch))
+                elif ch == '\\':
+                    self._esc = True
+                elif ch == '"':
+                    self._in_value = False
+                    self._buf = ""
+                else:
+                    self._notify(ch)
+            else:
+                self._buf += ch
+                if self._buf.endswith('"'):
+                    tail = self._buf[-20:].replace(' ', '')
+                    if tail.endswith('"text":"'):
+                        self._in_value = True
+                        self._buf = ""
+                if len(self._buf) > 60:
+                    self._buf = self._buf[-60:]
+
 
 # ── Prompts ─────────────────────────────────────────────────────────────────
 
@@ -25,6 +61,7 @@ Topic / premise: {prompt}
 Book type: {book_type}
 Total pages: {page_count}
 Illustration style: {illustration_style}
+{writing_style_hint}
 {research_block}
 
 Return ONLY valid JSON:
@@ -135,32 +172,41 @@ def _build_image_prompt(illus: dict, visual_style: str, color_palette: str) -> s
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
-def run_generation(book_id: int) -> None:
+def run_generation(book_id: int, notify: Callable | None = None) -> None:
+    _notify = notify or (lambda _: None)
     with Session(engine) as session:
         book = session.get(Book, book_id)
         if not book:
             return
         try:
-            _generate(book, session)
+            _generate(book, session, _notify)
         except Exception as e:
             _save(book, session,
                   status=BookStatus.error,
                   error_message=str(e)[:500],
                   progress_label="Generation failed")
+            _notify({"type": "error", "message": str(e)[:500]})
 
 
-def _generate(book: Book, session: Session) -> None:
+def _generate(book: Book, session: Session, notify: Callable) -> None:
     sources: list[dict] = []
 
     # ── Phase 1: Research ────────────────────────────────────────────────────
     research_block = ""
     if book.use_research:
         _save(book, session, progress=5, progress_label="Researching topic…")
+        notify({"type": "progress", "progress": 5, "label": "Researching topic…"})
         facts, sources = research(f"{book.title} {book.prompt}")
         research_block = f"\nResearch findings (incorporate naturally):\n{facts}\n"
 
     # ── Phase 2: Blueprint ────────────────────────────────────────────────────
     _save(book, session, progress=10, progress_label="Creating book outline…")
+    notify({"type": "progress", "progress": 10, "label": "Creating book outline…"})
+
+    writing_style_hint = (
+        f"Writing style requirement: Write this entire book in a {book.writing_style} style."
+        if book.writing_style else ""
+    )
 
     blueprint = generate_json(_BLUEPRINT_PROMPT.format(
         title=book.title,
@@ -168,6 +214,7 @@ def _generate(book: Book, session: Session) -> None:
         book_type=book.book_type,
         page_count=book.page_count,
         illustration_style=book.illustration_style,
+        writing_style_hint=writing_style_hint,
         research_block=research_block,
     ))
 
@@ -175,14 +222,15 @@ def _generate(book: Book, session: Session) -> None:
           progress=20,
           progress_label="Outline ready — writing chapters…",
           outline=json.dumps(blueprint))
+    notify({"type": "progress", "progress": 20, "label": "Outline ready — writing chapters…"})
 
-    visual_style   = blueprint.get("visual_style",   book.illustration_style)
-    color_palette  = blueprint.get("color_palette",  "varied")
-    writing_style  = blueprint.get("writing_style",  "engaging and clear")
-    tone           = blueprint.get("tone",           "appropriate for the genre")
+    visual_style    = blueprint.get("visual_style",    book.illustration_style)
+    color_palette   = blueprint.get("color_palette",   "varied")
+    writing_style   = blueprint.get("writing_style",   "engaging and clear")
+    tone            = blueprint.get("tone",            "appropriate for the genre")
     target_audience = blueprint.get("target_audience", "general readers")
-    characters     = blueprint.get("characters",     [])
-    chapters       = blueprint.get("chapters",       [])
+    characters      = blueprint.get("characters",      [])
+    chapters        = blueprint.get("chapters",        [])
 
     if not chapters:
         raise ValueError("Blueprint returned no chapters.")
@@ -195,8 +243,10 @@ def _generate(book: Book, session: Session) -> None:
         label = f"Writing chapter {ci + 1}/{len(chapters)}: {chapter.get('title', '')}…"
         chapter_progress = 20 + round((ci / len(chapters)) * 35)
         _save(book, session, progress=chapter_progress, progress_label=label)
+        notify({"type": "progress", "progress": chapter_progress, "label": label})
 
-        chapter_data = generate_json(_CHAPTER_PROMPT.format(
+        extractor = _TextExtractor(lambda tok: notify({"type": "token", "token": tok}))
+        chapter_data = stream_json(_CHAPTER_PROMPT.format(
             chapter_number=chapter.get("number", ci + 1),
             chapter_title=chapter.get("title", f"Chapter {ci + 1}"),
             book_title=book.title,
@@ -210,7 +260,7 @@ def _generate(book: Book, session: Session) -> None:
             characters_json=json.dumps(characters),
             page_count=chapter.get("page_count", 4),
             start_page=page_cursor,
-        ))
+        ), extractor.feed)
 
         for p in chapter_data.get("pages", []):
             p["chapter"] = chapter.get("title", "")
@@ -222,21 +272,20 @@ def _generate(book: Book, session: Session) -> None:
     result_pages: list[dict] = []
 
     for i, p in enumerate(all_pages):
-        img_label = f"Generating illustrations ({i + 1}/{total_pages})…"
+        img_label    = f"Generating illustrations ({i + 1}/{total_pages})…"
         img_progress = 55 + round(((i + 1) / max(total_pages, 1)) * 40)
-        _save(book, session, progress=img_progress, progress_label=img_label)
 
         illus = p.get("illustration", {})
 
         if p.get("requires_real_person"):
-            img_url = None
+            img_url     = None
             img_message = REAL_PERSON_MESSAGE
         else:
             img_prompt = _build_image_prompt(illus, visual_style, color_palette)
-            img_url = download_image(img_prompt, "", book.id, p.get("page_number", i + 1))
+            img_url    = download_image(img_prompt, "", book.id, p.get("page_number", i + 1))
             img_message = None if img_url else "Image could not be generated."
 
-        result_pages.append({
+        page_result = {
             "page_number":   p.get("page_number", i + 1),
             "chapter":       p.get("chapter", ""),
             "heading":       p.get("heading", ""),
@@ -244,7 +293,21 @@ def _generate(book: Book, session: Session) -> None:
             "image_url":     img_url,
             "image_message": img_message,
             "illustration":  illus,
+        }
+        result_pages.append(page_result)
+
+        # Save partial content after each page so reader can reconnect mid-generation
+        partial = json.dumps({
+            "visual_style":  visual_style,
+            "color_palette": color_palette,
+            "characters":    characters,
+            "pages":         result_pages,
+            "sources":       [],
+            "generating":    True,
         })
+        _save(book, session, progress=img_progress, progress_label=img_label, content=partial)
+        notify({"type": "progress", "progress": img_progress, "label": img_label})
+        notify({"type": "page",     "page": page_result})
 
     # ── Phase 5: Finalise ─────────────────────────────────────────────────────
     content = json.dumps({
@@ -253,6 +316,7 @@ def _generate(book: Book, session: Session) -> None:
         "characters":    characters,
         "pages":         result_pages,
         "sources":       sources,
+        "generating":    False,
     })
 
     _save(book, session,
@@ -260,3 +324,4 @@ def _generate(book: Book, session: Session) -> None:
           status=BookStatus.done,
           progress=100,
           progress_label="Done")
+    notify({"type": "done", "content": content})
