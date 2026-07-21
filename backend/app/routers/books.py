@@ -2,6 +2,7 @@ import asyncio
 from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlmodel import Session, select
+from ..auth import ws_token_ok
 from ..database import get_session
 from ..models.book import Book
 from ..schemas.book import BookCreate, BookUpdate
@@ -33,6 +34,9 @@ async def create_book(data: BookCreate, background_tasks: BackgroundTasks, sessi
 
 @router.websocket("/{book_id}/ws")
 async def book_ws(book_id: int, websocket: WebSocket, session: Session = Depends(get_session)):
+    if not ws_token_ok(websocket.query_params.get("token")):
+        await websocket.close(code=4401)
+        return
     await websocket.accept()
     book = session.get(Book, book_id)
     if not book:

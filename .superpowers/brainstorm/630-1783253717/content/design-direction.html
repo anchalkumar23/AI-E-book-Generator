@@ -1,0 +1,49 @@
+<h2>Which design direction feels right for your AI E-Book Generator?</h2>
+<p class="subtitle">Pick the aesthetic that best represents the product you want to build — these will guide everything from colors to typography to layout.</p>
+
+<div class="cards">
+  <div class="card" data-choice="editorial" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0f; height: 200px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 20px; position: relative; overflow: hidden; border-radius: 8px 8px 0 0;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+      <div style="position: absolute; top: 20px; right: 20px; width: 60px; height: 80px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 4px; box-shadow: 0 8px 24px rgba(99,102,241,0.4);"></div>
+      <div style="position: absolute; top: 30px; right: 30px; width: 60px; height: 80px; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); border-radius: 4px; box-shadow: 0 8px 24px rgba(139,92,246,0.4);"></div>
+      <div style="color: #fff; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.5; margin-bottom: 8px;">AI E-BOOK GENERATOR</div>
+      <div style="color: #fff; font-size: 22px; font-weight: 800; font-family: 'Georgia', serif; line-height: 1.1;">Generate books that<br><span style="background: linear-gradient(90deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">feel like art.</span></div>
+    </div>
+    <div class="card-body">
+      <h3>Dark Editorial</h3>
+      <p>Deep dark backgrounds, bold gradient accents (indigo → violet → pink), serif display headings, premium feel. Think Linear, Vercel, or Framer. Dramatic, confident, and modern.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean-light" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #fafafa; height: 200px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 20px; position: relative; overflow: hidden; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e5e7eb;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #000;"></div>
+      <div style="position: absolute; top: 20px; right: 20px; width: 60px; height: 80px; background: #fff; border-radius: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 30px; height: 35px; background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%); border-radius: 2px;"></div>
+      </div>
+      <div style="position: absolute; top: 30px; right: 30px; width: 60px; height: 80px; background: #fff; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;"></div>
+      <div style="color: #000; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.4; margin-bottom: 8px; font-weight: 600;">AI E-BOOK GENERATOR</div>
+      <div style="color: #000; font-size: 20px; font-weight: 700; line-height: 1.2;">The fastest way to write<br>your next <span style="border-bottom: 3px solid #000;">ebook.</span></div>
+    </div>
+    <div class="card-body">
+      <h3>Clean Minimal Light</h3>
+      <p>White backgrounds, strict black typography, generous whitespace, subtle gray tones. Inspired by Notion, Linear's light theme, or Stripe. Elegant, trustworthy, and easy to read.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="vibrant" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fff1f2 100%); height: 200px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; padding: 20px; position: relative; overflow: hidden; border-radius: 8px 8px 0 0;">
+      <div style="position: absolute; top: 15px; right: 15px; width: 70px; height: 90px; background: linear-gradient(135deg, #f59e0b, #f97316); border-radius: 8px; box-shadow: 4px 4px 0 #000; display: flex; align-items: center; justify-content: center; font-size: 24px;">📖</div>
+      <div style="position: absolute; top: 25px; right: 25px; width: 70px; height: 90px; background: linear-gradient(135deg, #10b981, #3b82f6); border-radius: 8px; box-shadow: 4px 4px 0 #000;"></div>
+      <div style="color: #000; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; margin-bottom: 8px; font-weight: 700;">AI E-BOOK GENERATOR</div>
+      <div style="color: #000; font-size: 20px; font-weight: 900; line-height: 1.1; font-family: sans-serif;">Create. Publish.<br><span style="background: #f59e0b; padding: 0 4px; border-radius: 2px; box-shadow: 3px 3px 0 #000;">Amaze readers.</span></div>
+    </div>
+    <div class="card-body">
+      <h3>Warm Playful Creative</h3>
+      <p>Warm cream/amber palette, bold colors, chunky shadows, rounded shapes, energetic feel. Think Lemon Squeezy, Craft, or Duolingo-era products. Friendly, creative, and approachable.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 24px; text-align: center;">Click a card to select your preference, then confirm in the terminal.</p>

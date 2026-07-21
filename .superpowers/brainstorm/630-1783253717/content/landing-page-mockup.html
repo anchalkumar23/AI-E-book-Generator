@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pageforge — Landing Page Mockup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: oklch(0.09 0.012 270);
+    --surface: oklch(0.13 0.015 270);
+    --border: oklch(0.22 0.018 270);
+    --ink: oklch(0.97 0.005 270);
+    --ink-muted: oklch(0.62 0.012 270);
+    --indigo: oklch(0.62 0.22 264);
+    --violet: oklch(0.58 0.23 290);
+    --pink: oklch(0.68 0.22 340);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    background: oklch(0.09 0.012 270 / 0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .nav-logo-mark {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--indigo), var(--pink));
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 160ms ease;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-ghost {
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 160ms ease, background 160ms ease;
+  }
+  .btn-ghost:hover { color: var(--ink); background: var(--surface); }
+
+  .btn-primary {
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--indigo);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-out), opacity 160ms ease;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 120px 48px 80px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, oklch(0.62 0.22 264 / 0.15) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-glow-pink {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, oklch(0.68 0.22 340 / 0.10) 0%, transparent 70%);
+    top: 30%;
+    right: 15%;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    max-width: 900px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: oklch(0.62 0.22 264 / 0.12);
+    border: 1px solid oklch(0.62 0.22 264 / 0.3);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: oklch(0.78 0.12 264);
+    margin-bottom: 32px;
+  }
+
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--indigo);
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero-h1 {
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    text-wrap: balance;
+    margin-bottom: 24px;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  .hero-h1 em {
+    font-style: normal;
+    color: var(--indigo);
+  }
+
+  .hero-sub {
+    font-size: 1.125rem;
+    color: var(--ink-muted);
+    max-width: 560px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 72px;
+  }
+
+  .btn-hero {
+    padding: 13px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--indigo);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms ease;
+    box-shadow: 0 0 0 0 oklch(0.62 0.22 264 / 0);
+  }
+  .btn-hero:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px oklch(0.62 0.22 264 / 0.35);
+  }
+  .btn-hero:active { transform: scale(0.97); }
+
+  .btn-secondary {
+    padding: 13px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: color 160ms ease, border-color 160ms ease, transform 160ms var(--ease-out);
+  }
+  .btn-secondary:hover { color: var(--ink); border-color: oklch(0.4 0.02 270); }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  /* BOOK PREVIEW CLUSTER */
+  .hero-books {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
+    height: 280px;
+    position: relative;
+  }
+
+  .book {
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    transition: transform 400ms var(--ease-out);
+    cursor: pointer;
+  }
+
+  .book::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5));
+    z-index: 1;
+  }
+
+  .book-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 2;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .book-1 {
+    width: 100px;
+    height: 140px;
+    background: linear-gradient(135deg, #1a1060 0%, #4c2885 50%, #7c3aed 100%);
+    transform: rotate(-8deg) translateY(20px);
+  }
+  .book-1:hover { transform: rotate(-5deg) translateY(8px) scale(1.04); }
+
+  .book-2 {
+    width: 120px;
+    height: 170px;
+    background: linear-gradient(135deg, #0f2744 0%, #1e40af 50%, #3b82f6 100%);
+    transform: rotate(-3deg) translateY(10px);
+  }
+  .book-2:hover { transform: rotate(-1deg) translateY(2px) scale(1.04); }
+
+  .book-3 {
+    width: 130px;
+    height: 190px;
+    background: linear-gradient(135deg, #1a0030 0%, #6d1a7c 50%, #ec4899 100%);
+  }
+  .book-3:hover { transform: translateY(-8px) scale(1.04); }
+
+  .book-4 {
+    width: 120px;
+    height: 168px;
+    background: linear-gradient(135deg, #0a2010 0%, #065f46 50%, #10b981 100%);
+    transform: rotate(3deg) translateY(10px);
+  }
+  .book-4:hover { transform: rotate(1deg) translateY(2px) scale(1.04); }
+
+  .book-5 {
+    width: 100px;
+    height: 142px;
+    background: linear-gradient(135deg, #301000 0%, #92400e 50%, #f59e0b 100%);
+    transform: rotate(8deg) translateY(20px);
+  }
+  .book-5:hover { transform: rotate(5deg) translateY(8px) scale(1.04); }
+
+  /* ── SOCIAL PROOF ── */
+  .social-proof {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    overflow: hidden;
+  }
+
+  .social-stat {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .social-stat-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .social-stat-label {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .social-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ── FEATURES ── */
+  .features {
+    padding: 120px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-intro {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .section-h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    text-wrap: balance;
+    line-height: 1.12;
+    margin-bottom: 16px;
+    font-family: 'Georgia', serif;
+  }
+
+  .section-sub {
+    font-size: 1.05rem;
+    color: var(--ink-muted);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* Feature rows — alternating editorial layout */
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    margin-bottom: 100px;
+  }
+
+  .feature-row:last-child { margin-bottom: 0; }
+
+  .feature-row.reverse { direction: rtl; }
+  .feature-row.reverse > * { direction: ltr; }
+
+  .feature-text {}
+
+  .feature-accent-line {
+    width: 32px;
+    height: 3px;
+    background: var(--indigo);
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .feature-h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 16px;
+    font-family: 'Georgia', serif;
+  }
+
+  .feature-p {
+    font-size: 1rem;
+    color: var(--ink-muted);
+    line-height: 1.75;
+    max-width: 42ch;
+  }
+
+  .feature-visual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .feature-visual-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--ink-muted);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* AI Generation visual mock */
+  .mock-generation {
+    padding: 24px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mock-gen-bar {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .mock-gen-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--indigo), var(--violet));
+  }
+
+  .mock-gen-book-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .mock-gen-mini-book {
+    width: 50px;
+    height: 70px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .mock-gen-mini-book-1 { background: linear-gradient(135deg, #4c2885, #7c3aed); }
+  .mock-gen-mini-book-2 { background: linear-gradient(135deg, #065f46, #10b981); }
+  .mock-gen-mini-book-3 { background: linear-gradient(135deg, #92400e, #f59e0b); opacity: 0.4; }
+
+  .mock-gen-typing {
+    background: oklch(0.62 0.22 264 / 0.08);
+    border: 1px solid oklch(0.62 0.22 264 / 0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: oklch(0.78 0.08 264);
+    font-family: monospace;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mock-gen-line { opacity: 0.8; }
+  .mock-gen-line-dim { opacity: 0.35; }
+
+  /* Flipbook visual mock */
+  .mock-flipbook {
+    perspective: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mock-book-open {
+    display: flex;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .mock-page {
+    width: 100px;
+    height: 140px;
+    background: #1a1a2e;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .mock-page-left {
+    border-radius: 4px 0 0 4px;
+    border-right: 2px solid var(--border);
+    background: linear-gradient(135deg, #1e1340 0%, #2d1b69 100%);
+  }
+
+  .mock-page-right {
+    border-radius: 0 4px 4px 0;
+    background: oklch(0.14 0.01 270);
+  }
+
+  .mock-page-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .mock-page-line {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .mock-page-img {
+    height: 50px;
+    background: linear-gradient(135deg, #1e1340, #4c2885);
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    padding: 120px 48px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .how-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .how-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 64px;
+    position: relative;
+  }
+
+  .how-steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: calc(16.66% + 16px);
+    right: calc(16.66% + 16px);
+    height: 1px;
+    background: linear-gradient(90deg, var(--indigo), var(--violet), var(--pink));
+    opacity: 0.4;
+  }
+
+  .how-step {
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  .how-step-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 22px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .how-step:nth-child(1) .how-step-icon { border-color: oklch(0.62 0.22 264 / 0.5); box-shadow: 0 0 16px oklch(0.62 0.22 264 / 0.15); }
+  .how-step:nth-child(2) .how-step-icon { border-color: oklch(0.58 0.23 290 / 0.5); box-shadow: 0 0 16px oklch(0.58 0.23 290 / 0.15); }
+  .how-step:nth-child(3) .how-step-icon { border-color: oklch(0.68 0.22 340 / 0.5); box-shadow: 0 0 16px oklch(0.68 0.22 340 / 0.15); }
+
+  .how-step-title {
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--ink);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .how-step-desc {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+
+  /* ── PRICING ── */
+  .pricing {
+    padding: 120px 48px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 64px;
+  }
+
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    position: relative;
+    transition: border-color 200ms ease, transform 200ms var(--ease-out);
+  }
+
+  .pricing-card:hover {
+    border-color: oklch(0.62 0.22 264 / 0.4);
+    transform: translateY(-2px);
+  }
+
+  .pricing-card.featured {
+    border-color: oklch(0.62 0.22 264 / 0.5);
+    background: oklch(0.62 0.22 264 / 0.05);
+  }
+
+  .pricing-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  .pricing-card.featured .pricing-card-label { color: var(--indigo); }
+
+  .pricing-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+  }
+
+  .pricing-credits {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 24px;
+  }
+
+  .pricing-perks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .pricing-perk {
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .perk-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: oklch(0.62 0.22 264 / 0.15);
+    border: 1px solid oklch(0.62 0.22 264 / 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 9px;
+    color: var(--indigo);
+  }
+
+  .pricing-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-out), opacity 160ms ease;
+    border: none;
+  }
+
+  .pricing-btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink-muted);
+  }
+  .pricing-btn-solid {
+    background: var(--indigo);
+    color: #fff;
+  }
+
+  .pricing-btn:hover { opacity: 0.85; }
+  .pricing-btn:active { transform: scale(0.97); }
+
+  /* ── FOOTER CTA ── */
+  .footer-cta {
+    padding: 100px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-cta-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.62 0.22 264 / 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .footer-cta-h2 {
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    text-wrap: balance;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    font-family: 'Georgia', serif;
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-cta-sub {
+    font-size: 1.05rem;
+    color: var(--ink-muted);
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-brand {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .footer-copy {
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+  .footer-links a:hover { color: var(--ink); }
+
+  /* Annotation overlays */
+  .annotation {
+    display: inline-block;
+    background: oklch(0.9 0.15 75 / 0.15);
+    border: 1px solid oklch(0.9 0.15 75 / 0.4);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: oklch(0.9 0.15 75);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">📖</div>
+    Pageforge
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Library</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Examples</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-ghost">Sign in</button>
+    <button class="btn-primary">Start free →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow-pink"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      AI-powered illustration + research + writing
+    </div>
+    <h1 class="hero-h1">
+      Turn any idea into a<br>
+      <em>fully illustrated ebook</em><br>
+      in minutes.
+    </h1>
+    <p class="hero-sub">
+      Pageforge writes, illustrates, and formats your book — from children's stories to technical guides — then exports it as PDF, EPUB, or an interactive flipbook.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-hero">Generate your first book →</button>
+      <button class="btn-secondary">See examples</button>
+    </div>
+
+    <!-- Book covers cluster -->
+    <div class="hero-books">
+      <div class="book book-1">
+        <div class="book-label">The Space Explorers</div>
+      </div>
+      <div class="book book-2">
+        <div class="book-label">Python for Beginners</div>
+      </div>
+      <div class="book book-3">
+        <div class="book-label">Mindfulness Daily</div>
+      </div>
+      <div class="book book-4">
+        <div class="book-label">Startup Playbook</div>
+      </div>
+      <div class="book book-5">
+        <div class="book-label">Desert Creatures</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF STRIP -->
+<div class="social-proof">
+  <div class="social-stat">
+    <div class="social-stat-num">12,000+</div>
+    <div class="social-stat-label">Books generated</div>
+  </div>
+  <div class="social-divider"></div>
+  <div class="social-stat">
+    <div class="social-stat-num">40+</div>
+    <div class="social-stat-label">Supported languages</div>
+  </div>
+  <div class="social-divider"></div>
+  <div class="social-stat">
+    <div class="social-stat-num">PDF · EPUB · Flipbook</div>
+    <div class="social-stat-label">Export formats</div>
+  </div>
+  <div class="social-divider"></div>
+  <div class="social-stat">
+    <div class="social-stat-num">∞</div>
+    <div class="social-stat-label">Credit-based, no subscriptions</div>
+  </div>
+</div>
+
+<!-- FEATURES — alternating editorial rows -->
+<section class="features">
+  <div class="section-intro">
+    <h2 class="section-h2">Everything your book needs,<br>nothing you don't.</h2>
+    <p class="section-sub">From the first prompt to a polished export, Pageforge handles it all.</p>
+  </div>
+
+  <!-- Row 1: AI Generation -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <div class="feature-accent-line"></div>
+      <h3 class="feature-h3">Write a prompt.<br>Get a complete book.</h3>
+      <p class="feature-p">
+        Describe the topic, length, and audience — Pageforge generates the full structure, chapters, pages, and consistent prose in one shot. Children's books, tutorials, guides, and more.
+      </p>
+    </div>
+    <div class="feature-visual">
+      <div class="feature-visual-inner">
+        <div class="mock-generation">
+          <div class="mock-gen-typing">
+            <div class="mock-gen-line">&gt; "A beginner's guide to Python for kids, 15 pages"</div>
+            <div class="mock-gen-line-dim">Researching topic… generating chapters…</div>
+            <div class="mock-gen-line-dim" style="opacity:0.2;">Generating illustrations…</div>
+          </div>
+          <div class="mock-gen-bar">
+            <div class="mock-gen-bar-fill" style="width:68%"></div>
+          </div>
+          <div style="font-size:11px; color:var(--ink-muted);">Generating page 10 of 15…</div>
+          <div class="mock-gen-book-row">
+            <div class="mock-gen-mini-book mock-gen-mini-book-1"></div>
+            <div class="mock-gen-mini-book mock-gen-mini-book-2"></div>
+            <div class="mock-gen-mini-book mock-gen-mini-book-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Flipbook Reader — reversed -->
+  <div class="feature-row reverse">
+    <div class="feature-text">
+      <div class="feature-accent-line" style="background: var(--violet);"></div>
+      <h3 class="feature-h3">Read it like a real book.</h3>
+      <p class="feature-p">
+        Every generated book opens as an interactive HTML5 flipbook with realistic page-turn animations. Text and illustrations sit side by side, exactly as designed.
+      </p>
+    </div>
+    <div class="feature-visual">
+      <div class="feature-visual-inner">
+        <div class="mock-flipbook">
+          <div class="mock-book-open">
+            <div class="mock-page mock-page-left">
+              <div class="mock-page-content">
+                <div class="mock-page-img"></div>
+                <div class="mock-page-line" style="width:80%"></div>
+                <div class="mock-page-line" style="width:60%"></div>
+              </div>
+            </div>
+            <div class="mock-page mock-page-right">
+              <div class="mock-page-content">
+                <div class="mock-page-line" style="width:90%"></div>
+                <div class="mock-page-line" style="width:75%"></div>
+                <div class="mock-page-line" style="width:85%"></div>
+                <div class="mock-page-line" style="width:50%"></div>
+                <div class="mock-page-line" style="width:80%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Export -->
+  <div class="feature-row">
+    <div class="feature-text">
+      <div class="feature-accent-line" style="background: var(--pink);"></div>
+      <h3 class="feature-h3">Export anywhere, anytime.</h3>
+      <p class="feature-p">
+        Download as polished PDF, EPUB for e-readers, or share the interactive flipbook link. Content is generated once and rendered to any format — no regeneration needed.
+      </p>
+    </div>
+    <div class="feature-visual">
+      <div class="feature-visual-inner">
+        <div style="display: flex; gap: 14px; align-items: center; padding: 24px;">
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; text-align: center; flex: 1; transition: border-color 200ms ease;" onmouseenter="this.style.borderColor='oklch(0.62 0.22 264 / 0.5)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <div style="font-size: 28px; margin-bottom: 8px;">📄</div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--ink);">PDF</div>
+            <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">Print-ready</div>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; text-align: center; flex: 1; transition: border-color 200ms ease;" onmouseenter="this.style.borderColor='oklch(0.58 0.23 290 / 0.5)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <div style="font-size: 28px; margin-bottom: 8px;">📚</div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--ink);">EPUB</div>
+            <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">E-readers</div>
+          </div>
+          <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; text-align: center; flex: 1; transition: border-color 200ms ease;" onmouseenter="this.style.borderColor='oklch(0.68 0.22 340 / 0.5)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <div style="font-size: 28px; margin-bottom: 8px;">🌐</div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--ink);">Flipbook</div>
+            <div style="font-size: 11px; color: var(--ink-muted); margin-top: 4px;">Shareable link</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="how-inner">
+    <div class="section-intro" style="text-align:left">
+      <h2 class="section-h2">From idea to ebook<br>in three steps.</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-step-icon">✏️</div>
+        <div class="how-step-title">Describe your book</div>
+        <p class="how-step-desc">Enter the topic, audience, and how long it should be. A children's picture book, a 50-page tutorial, or anything in between.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-icon">⚡</div>
+        <div class="how-step-title">AI generates everything</div>
+        <p class="how-step-desc">Pageforge researches the topic, writes the content, and creates consistent illustrations for every page.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-icon">📦</div>
+        <div class="how-step-title">Read, edit, export</div>
+        <p class="how-step-desc">Open your book in the interactive reader, make edits, then download as PDF, EPUB, or share the flipbook link.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing">
+  <div class="section-intro">
+    <h2 class="section-h2">Pay only for what you generate.</h2>
+    <p class="section-sub">Credits never expire. No subscription required.</p>
+  </div>
+  <div class="pricing-cards">
+    <div class="pricing-card">
+      <div class="pricing-card-label">Starter</div>
+      <div class="pricing-amount">$9</div>
+      <div class="pricing-credits">20 book credits</div>
+      <ul class="pricing-perks">
+        <li class="pricing-perk"><span class="perk-check">✓</span>20 fully illustrated books</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>PDF + EPUB export</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>Personal library</li>
+      </ul>
+      <button class="pricing-btn pricing-btn-outline">Buy credits</button>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-card-label">Popular</div>
+      <div class="pricing-amount">$29</div>
+      <div class="pricing-credits">75 book credits</div>
+      <ul class="pricing-perks">
+        <li class="pricing-perk"><span class="perk-check">✓</span>75 fully illustrated books</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>All export formats</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>Flipbook sharing</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>Priority generation</li>
+      </ul>
+      <button class="pricing-btn pricing-btn-solid">Buy credits</button>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-card-label">Studio</div>
+      <div class="pricing-amount">$79</div>
+      <div class="pricing-credits">250 book credits</div>
+      <ul class="pricing-perks">
+        <li class="pricing-perk"><span class="perk-check">✓</span>250 fully illustrated books</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>All export formats</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>Custom illustration style</li>
+        <li class="pricing-perk"><span class="perk-check">✓</span>API access</li>
+      </ul>
+      <button class="pricing-btn pricing-btn-outline">Buy credits</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<section class="footer-cta">
+  <div class="footer-cta-glow"></div>
+  <h2 class="footer-cta-h2">Your first book is one<br>prompt away.</h2>
+  <p class="footer-cta-sub">No credit card needed to start. 3 free books on signup.</p>
+  <div class="footer-cta-actions">
+    <button class="btn-hero">Generate your first book →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Pageforge</div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Support</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Pageforge. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

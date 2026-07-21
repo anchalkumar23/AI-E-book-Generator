@@ -127,21 +127,3 @@ def test_delete_does_not_affect_other_books(client, book_factory):
     ids = [b["id"] for b in client.get("/api/books/").json()]
     assert a["id"] in ids
     assert b["id"] not in ids
-
-
-# ── Credits ───────────────────────────────────────────────────────────────────
-
-def test_credits_returns_remaining_and_total(client):
-    r = client.get("/api/credits/")
-    assert r.status_code == 200
-    data = r.json()
-    assert "remaining" in data
-    assert "total" in data
-    assert data["remaining"] <= data["total"]
-
-
-def test_consume_credit_decrements_by_one(client):
-    before = client.get("/api/credits/").json()["remaining"]
-    r = client.post("/api/credits/consume")
-    assert r.status_code == 200
-    assert r.json()["remaining"] == before - 1

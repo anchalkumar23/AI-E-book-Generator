@@ -1,0 +1,67 @@
+.screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--bg);
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--border);
+  border-top-color: var(--indigo);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.label {
+  font-size: 14px;
+  color: var(--faint);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.detail {
+  max-width: 560px;
+  max-height: 220px;
+  overflow: auto;
+  text-align: left;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: oklch(0.78 0.14 20);
+  background: oklch(0.12 0.03 20);
+  border: 1px solid oklch(0.25 0.08 20);
+  border-radius: 10px;
+  padding: 14px;
+  white-space: pre-wrap;
+}
+
+.retry {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  background: var(--indigo);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.retry:hover { opacity: 0.9; }
+.retry:active { transform: scale(0.97); }

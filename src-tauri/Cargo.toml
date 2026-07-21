@@ -1,0 +1,49 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+# Desktop-only (Windows/macOS). The scaffold also emits staticlib+cdylib for
+# iOS/Android hosts to link against — that's three compiles of the same code
+# and a much larger target/ dir for no benefit here.
+crate-type = ["rlib"]
+
+# Full debug info (the cargo default) makes LLVM run out of memory on this
+# machine. The Rust here is a 4-file process supervisor — a Rust debugger is not
+# worth an OOM. Panics still show a message; only line numbers are lost.
+[profile.dev]
+debug = 0
+incremental = false
+
+# Release without whole-program LTO: `lto = true` with `codegen-units = 1` is the
+# most memory-hungry configuration rustc has, and this shell is a small
+# supervisor — the size it would save is noise next to the 25 MB engine sidecar.
+[profile.release]
+lto = false
+codegen-units = 16
+opt-level = "s"
+strip = true
+panic = "abort"
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.3", features = [] }
+tauri-plugin-log = "2"
+# Spawns and supervises the Python engine child process.
+tauri-plugin-shell = "2"
+# `timeout` for the 30s handshake deadline.
+tokio = { version = "1", features = ["time"] }

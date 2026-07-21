@@ -12,3 +12,28 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# ── Node / Vite ──
+node_modules/
+dist/
+
+# ── Rust / Tauri ──
+# target/ reaches ~2 GB; binaries/ holds the frozen engine (~100-250 MB).
+src-tauri/target/
+src-tauri/binaries/
+src-tauri/gen/
+
+# ── PyInstaller ──
+build/
+*.manifest
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+backend/venv/
+backend/.pytest_cache/
+.pytest_cache/
+
+# ── App data ──
+*.db
+backend/static/images/

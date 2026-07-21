@@ -1,7 +1,22 @@
 import os
+from pathlib import Path
+
 from sqlmodel import SQLModel, create_engine, Session, text
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ebooks.db")
+# Imported for their side effect: SQLModel only creates tables it has seen.
+from .models.book import Book              # noqa: F401
+from .models.chat import Chat, Message     # noqa: F401
+from .models.setting import Setting        # noqa: F401
+
+# The Tauri shell passes the OS app-data directory as argv[1]; engine.py puts it
+# in the environment. An installed app must not write next to its executable.
+# The fallback keeps pytest and a bare `python -m app.engine` working.
+_db_dir = os.getenv("ENGINE_DB_DIR")
+if _db_dir:
+    Path(_db_dir).mkdir(parents=True, exist_ok=True)
+    DATABASE_URL = f"sqlite:///{Path(_db_dir) / 'pageforge.db'}"
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ebooks.db")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 # New columns added after initial schema — safely ignored if they already exist

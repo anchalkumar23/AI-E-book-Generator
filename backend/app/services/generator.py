@@ -3,7 +3,7 @@ Structured book generation pipeline:
   1. Research (optional, DuckDuckGo multi-source)
   2. Blueprint  — outline, characters, style guide, chapter breakdown
   3. Chapters   — one LLM call per chapter → pages with text + illustration prompts
-  4. Images     — download from Pollinations per page (notifies WS after each)
+  4. Images     — one image provider call per page (notifies WS after each)
   5. Finalise
 """
 import json
@@ -12,43 +12,13 @@ from typing import Callable
 from sqlmodel import Session
 from ..database import engine
 from ..models.book import Book, BookStatus
-from .search import research
-from .llm import generate_json, stream_json
-from .images import download_image, REAL_PERSON_MESSAGE
-
-
-class _TextExtractor:
-    """Emit only prose content from 'text' JSON fields during streaming."""
-    _ESC = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}
-
-    def __init__(self, notify: Callable[[str], None]):
-        self._notify = notify
-        self._buf = ""
-        self._in_value = False
-        self._esc = False
-
-    def feed(self, raw: str) -> None:
-        for ch in raw:
-            if self._in_value:
-                if self._esc:
-                    self._esc = False
-                    self._notify(self._ESC.get(ch, ch))
-                elif ch == '\\':
-                    self._esc = True
-                elif ch == '"':
-                    self._in_value = False
-                    self._buf = ""
-                else:
-                    self._notify(ch)
-            else:
-                self._buf += ch
-                if self._buf.endswith('"'):
-                    tail = self._buf[-20:].replace(' ', '')
-                    if tail.endswith('"text":"'):
-                        self._in_value = True
-                        self._buf = ""
-                if len(self._buf) > 60:
-                    self._buf = self._buf[-60:]
+from .config import setting
+from .extract import TextExtractor
+from .images.base import REAL_PERSON_MESSAGE
+from .images.factory import get_images
+from .knowledge.factory import get_knowledge
+from .llm.base import stream_json_with_retry
+from .llm.factory import get_llm
 
 
 # ── Prompts ─────────────────────────────────────────────────────────────────
@@ -188,7 +158,27 @@ def run_generation(book_id: int, notify: Callable | None = None) -> None:
             _notify({"type": "error", "message": str(e)[:500]})
 
 
+def _make_llm(session: Session):
+    """Passes the provider's own settings through, or Settings is decorative."""
+    name = setting(session, "llm_provider")
+    if name == "groq":
+        return get_llm(name, api_key=setting(session, "groq_api_key"),
+                       model=setting(session, "groq_model"))
+    return get_llm(name, model=setting(session, "ollama_model"))
+
+
+def _make_images(session: Session):
+    name = setting(session, "image_provider")
+    if name == "huggingface":
+        return get_images(name, token=setting(session, "hf_token"))
+    return get_images(name)
+
+
 def _generate(book: Book, session: Session, notify: Callable) -> None:
+    llm = _make_llm(session)
+    knowledge = get_knowledge(setting(session, "knowledge_provider"))
+    images = _make_images(session)
+
     sources: list[dict] = []
 
     # ── Phase 1: Research ────────────────────────────────────────────────────
@@ -196,7 +186,7 @@ def _generate(book: Book, session: Session, notify: Callable) -> None:
     if book.use_research:
         _save(book, session, progress=5, progress_label="Researching topic…")
         notify({"type": "progress", "progress": 5, "label": "Researching topic…"})
-        facts, sources = research(f"{book.title} {book.prompt}")
+        facts, sources = knowledge.research(f"{book.title} {book.prompt}")
         research_block = f"\nResearch findings (incorporate naturally):\n{facts}\n"
 
     # ── Phase 2: Blueprint ────────────────────────────────────────────────────
@@ -208,7 +198,8 @@ def _generate(book: Book, session: Session, notify: Callable) -> None:
         if book.writing_style else ""
     )
 
-    blueprint = generate_json(_BLUEPRINT_PROMPT.format(
+    # Blueprint tokens are not shown to the user, so they are discarded.
+    blueprint = stream_json_with_retry(llm, _BLUEPRINT_PROMPT.format(
         title=book.title,
         prompt=book.prompt,
         book_type=book.book_type,
@@ -216,7 +207,7 @@ def _generate(book: Book, session: Session, notify: Callable) -> None:
         illustration_style=book.illustration_style,
         writing_style_hint=writing_style_hint,
         research_block=research_block,
-    ))
+    ), lambda _t: None)
 
     _save(book, session,
           progress=20,
@@ -245,8 +236,8 @@ def _generate(book: Book, session: Session, notify: Callable) -> None:
         _save(book, session, progress=chapter_progress, progress_label=label)
         notify({"type": "progress", "progress": chapter_progress, "label": label})
 
-        extractor = _TextExtractor(lambda tok: notify({"type": "token", "token": tok}))
-        chapter_data = stream_json(_CHAPTER_PROMPT.format(
+        extractor = TextExtractor(lambda tok: notify({"type": "token", "token": tok}))
+        chapter_data = stream_json_with_retry(llm, _CHAPTER_PROMPT.format(
             chapter_number=chapter.get("number", ci + 1),
             chapter_title=chapter.get("title", f"Chapter {ci + 1}"),
             book_title=book.title,
@@ -282,8 +273,9 @@ def _generate(book: Book, session: Session, notify: Callable) -> None:
             img_message = REAL_PERSON_MESSAGE
         else:
             img_prompt = _build_image_prompt(illus, visual_style, color_palette)
-            img_url    = download_image(img_prompt, "", book.id, p.get("page_number", i + 1))
-            img_message = None if img_url else "Image could not be generated."
+            img_url    = images.generate(img_prompt, book.id, p.get("page_number", i + 1))
+            # "could not" implied a failure even when no provider had tried.
+            img_message = None if img_url else "No illustration for this page."
 
         page_result = {
             "page_number":   p.get("page_number", i + 1),
